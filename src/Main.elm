@@ -237,7 +237,16 @@ scenesToSceneSets scenes =
         go currentSetName currentScenes remainingScenes acc =
             case remainingScenes of
                 [] ->
-                    List.reverse acc
+                    if currentScenes == [] then
+                        List.reverse acc
+
+                    else
+                        List.reverse
+                            ({ name = currentSetName
+                             , scenes = List.reverse currentScenes
+                             }
+                                :: acc
+                            )
 
                 scene :: rest ->
                     if scene.color == sceneSetHeaderColor then
