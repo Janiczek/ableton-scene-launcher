@@ -34,8 +34,6 @@ type alias Scene =
     , color : String
     , isTriggered : Bool
     , isPlaying : Bool
-    , length : Float
-    , playingPosition : Float
     }
 
 
@@ -47,14 +45,12 @@ type alias SceneSet =
 
 type alias Model =
     { sceneSets : List SceneSet
-    , activeSceneId : Maybe String
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
     ( { sceneSets = []
-      , activeSceneId = Nothing
       }
     , Cmd.none
     )
@@ -67,7 +63,6 @@ type Msg
 
 type InMsg
     = Scenes (List Scene)
-    | ActiveSceneId (Maybe String)
 
 
 type OutMsg
@@ -108,11 +103,6 @@ updateInMsg msg model =
             , Cmd.none
             )
 
-        ActiveSceneId maybeId ->
-            ( { model | activeSceneId = maybeId }
-            , Cmd.none
-            )
-
 
 inMsgDecoder : Decoder InMsg
 inMsgDecoder =
@@ -124,10 +114,6 @@ inMsgDecoder =
                         Json.Decode.field "scenes" (Json.Decode.list sceneDecoder)
                             |> Json.Decode.map Scenes
 
-                    "activeSceneId" ->
-                        Json.Decode.field "id" (Json.Decode.maybe Json.Decode.string)
-                            |> Json.Decode.map ActiveSceneId
-
                     _ ->
                         Json.Decode.fail ("Unknown message type: " ++ msgType)
             )
@@ -135,15 +121,13 @@ inMsgDecoder =
 
 sceneDecoder : Decoder Scene
 sceneDecoder =
-    Json.Decode.map8 Scene
+    Json.Decode.map6 Scene
         (Json.Decode.field "id" Json.Decode.string)
         (Json.Decode.field "name" Json.Decode.string)
         (Json.Decode.field "index" Json.Decode.int)
         (Json.Decode.field "color" Json.Decode.string)
         (Json.Decode.field "isTriggered" Json.Decode.bool)
         (Json.Decode.field "isPlaying" Json.Decode.bool)
-        (Json.Decode.field "length" Json.Decode.float)
-        (Json.Decode.field "playingPosition" Json.Decode.float)
 
 
 encodeOutMsg : OutMsg -> Json.Encode.Value
@@ -174,9 +158,8 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     Html.div [ Attrs.class "app" ]
-        [ Html.div [] [ Html.text <| Debug.toString model ]
-        , Html.div [ Attrs.class "scenesets" ] <|
-            List.map (viewSceneSet model) model.sceneSets
+        [ Html.div [ Attrs.class "scenesets" ] <|
+            List.map viewSceneSet model.sceneSets
         , Html.div [ Attrs.class "controls" ]
             [ Html.button
                 [ Events.onClick (SendOutMsg StopNicely) ]
@@ -188,42 +171,26 @@ view model =
         ]
 
 
-viewSceneSet : { model | activeSceneId : Maybe String } -> SceneSet -> Html Msg
-viewSceneSet model sceneSet =
+viewSceneSet : SceneSet -> Html Msg
+viewSceneSet sceneSet =
     Html.div []
         [ Html.h2 [ Attrs.class "sceneset-name" ] [ Html.text sceneSet.name ]
         , Html.div [ Attrs.class "sceneset-scenes" ]
-            (List.map (viewSceneButton model) sceneSet.scenes)
+            (List.map viewSceneButton sceneSet.scenes)
         ]
 
 
-viewSceneButton : { model | activeSceneId : Maybe String } -> Scene -> Html Msg
-viewSceneButton model scene =
-    let
-        isActive =
-            model.activeSceneId == Just scene.id
-    in
+viewSceneButton : Scene -> Html Msg
+viewSceneButton scene =
     Html.button
         [ Attrs.classList
             [ ( "scene", True )
-            , ( "active", isActive )
+            , ( "triggered", scene.isTriggered )
+            , ( "playing", scene.isPlaying )
             ]
-        , if isActive then
-            cssVars [ ( "--duration", String.fromFloat scene.length ++ "s" ) ]
-
-          else
-            Attrs.classList []
         , Events.onClick (SendOutMsg (TriggerScene { index = scene.index }))
         ]
         [ Html.text scene.name ]
-
-
-cssVars : List ( String, String ) -> Html.Attribute msg
-cssVars vars =
-    vars
-        |> List.map (\( k, v ) -> k ++ ": " ++ v)
-        |> String.join ";"
-        |> Attrs.attribute "style"
 
 
 {-|

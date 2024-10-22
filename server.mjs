@@ -26,17 +26,15 @@ console.log("HTTP server listening on port", httpPort);
 const msg_ = (msg, data) => JSON.stringify({ msg, ...data });
 const msg = {
   scenes: (s) => msg_("scenes", { scenes: s }),
-  activeSceneId: (i) => msg_("activeSceneId", { id: i }),
 };
 
 // --------------------------------
 // ABLETON
 
-const ableton = new Ableton({ logger: console });
-await ableton.start();
+const ableton = new Ableton({ logger: console, commandTimeoutMs: 60000 });
+await ableton.start(60000);
 let scenes = await ableton.song.get("scenes");
 let sceneMetadata = await getSceneMetadata(scenes);
-let activeSceneId = (await ableton.song.view.get("selected_scene")).raw.id;
 
 // --------------------------------
 // WEBSOCKET SERVER
@@ -62,18 +60,22 @@ wss.on('connection', function connection(ws) {
 // --------------------------------
 // BUSINESS LOGIC
 
-ableton.song.addListener("scenes", async (s) => {
+const updateAndSendSceneMetadata = async (s) => {
   scenes = s;
   sceneMetadata = await getSceneMetadata(s);
   const m = msg.scenes(sceneMetadata);
   onEachClient((client) => client.send(m));
-});
+};
 
-ableton.song.view.addListener("selected_scene", (s) => {
-  activeSceneId = s?.raw.id;
-  const m = msg.activeSceneId(activeSceneId);
-  onEachClient((client) => client.send(m));
-})
+ableton.song.addListener("scenes", updateAndSendSceneMetadata);
+
+const tracks = await ableton.song.get("tracks");
+tracks.forEach(track => {
+  track.addListener("playing_slot_index", async () => {
+    const s = await ableton.song.get("scenes");
+    await updateAndSendSceneMetadata(s);
+  });
+});
 
 async function update(msg) {
   switch (msg.msg) {
@@ -100,12 +102,11 @@ console.log(`Ready to receive connections, open the browser at http://${ipAddres
 async function getSceneMetadata(scenes) {
   return Promise.all(scenes.map(async (scene, index) => {
     const clipSlots = await scene.get("clip_slots");
-    const clips = (await Promise.all(clipSlots.map(slot => slot.get("clip")))).filter(clip => clip != null);
+    const clips = (await Promise.all(clipSlots.map((slot) => slot.get("clip"))))
+      .filter((clip) => clip != null);
     const clipInfo = await Promise.all(clips.map(async (clip) => ({
       isTriggered: await clip.get("is_triggered"),
       isPlaying: await clip.get("is_playing"),
-      length: await clip.get("length"),
-      playingPosition: await clip.get("playing_position"),
     })));
 
     return {
@@ -115,8 +116,6 @@ async function getSceneMetadata(scenes) {
       index,
       isTriggered: clipInfo.some(c => c.isTriggered),
       isPlaying: clipInfo.some(c => c.isPlaying),
-      length: Math.max(0, ...clipInfo.map(c => c.length)),
-      playingPosition: Math.max(0, ...clipInfo.map(c => c.playingPosition)),
     };
   }));
 };
