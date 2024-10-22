@@ -209,7 +209,7 @@ viewSceneButton model scene =
             , ( "active", isActive )
             ]
         , if isActive then
-            cssVars [ ( "--duration", "3s" ) ]
+            cssVars [ ( "--duration", String.fromFloat scene.length ++ "s" ) ]
 
           else
             Attrs.classList []

@@ -115,8 +115,8 @@ async function getSceneMetadata(scenes) {
       index,
       isTriggered: clipInfo.some(c => c.isTriggered),
       isPlaying: clipInfo.some(c => c.isPlaying),
-      length: Math.max(...clipInfo.map(c => c.length)),
-      playingPosition: Math.max(...clipInfo.map(c => c.playingPosition)),
+      length: Math.max(0, ...clipInfo.map(c => c.length)),
+      playingPosition: Math.max(0, ...clipInfo.map(c => c.playingPosition)),
     };
   }));
 };
