@@ -1,0 +1,2 @@
+elm: elm make src/Main.elm --output public/elm.js
+serve: node server.mjs
