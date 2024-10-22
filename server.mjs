@@ -98,13 +98,28 @@ console.log(`Ready to receive connections, open the browser at http://${ipAddres
 // HELPERS
 
 async function getSceneMetadata(scenes) {
-  return Promise.all(scenes.map(async (scene, index) => ({
-    id: scene.raw.id,
-    name: await scene.get("name"),
-    color: (await scene.get("color")).toString(),
-    index,
-  })));
-}
+  return Promise.all(scenes.map(async (scene, index) => {
+    const clipSlots = await scene.get("clip_slots");
+    const clips = (await Promise.all(clipSlots.map(slot => slot.get("clip")))).filter(clip => clip != null);
+    const clipInfo = await Promise.all(clips.map(async (clip) => ({
+      isTriggered: await clip.get("is_triggered"),
+      isPlaying: await clip.get("is_playing"),
+      length: await clip.get("length"),
+      playingPosition: await clip.get("playing_position"),
+    })));
+
+    return {
+      id: scene.raw.id,
+      name: await scene.get("name"),
+      color: (await scene.get("color")).toString(),
+      index,
+      isTriggered: clipInfo.some(c => c.isTriggered),
+      isPlaying: clipInfo.some(c => c.isPlaying),
+      length: Math.max(...clipInfo.map(c => c.length)),
+      playingPosition: Math.max(...clipInfo.map(c => c.playingPosition)),
+    };
+  }));
+};
 
 function onEachClient(fn) {
   wss.clients.forEach(function each(client) {

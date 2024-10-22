@@ -32,6 +32,10 @@ type alias Scene =
     , name : String
     , index : Int
     , color : String
+    , isTriggered : Bool
+    , isPlaying : Bool
+    , length : Float
+    , playingPosition : Float
     }
 
 
@@ -131,11 +135,15 @@ inMsgDecoder =
 
 sceneDecoder : Decoder Scene
 sceneDecoder =
-    Json.Decode.map4 Scene
+    Json.Decode.map8 Scene
         (Json.Decode.field "id" Json.Decode.string)
         (Json.Decode.field "name" Json.Decode.string)
         (Json.Decode.field "index" Json.Decode.int)
         (Json.Decode.field "color" Json.Decode.string)
+        (Json.Decode.field "isTriggered" Json.Decode.bool)
+        (Json.Decode.field "isPlaying" Json.Decode.bool)
+        (Json.Decode.field "length" Json.Decode.float)
+        (Json.Decode.field "playingPosition" Json.Decode.float)
 
 
 encodeOutMsg : OutMsg -> Json.Encode.Value
