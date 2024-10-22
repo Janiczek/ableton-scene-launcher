@@ -3,5 +3,11 @@
     "ableton-js": "^3.4.6",
     "express": "^4.21.1",
     "ws": "^8.18.0"
+  },
+  "scripts": {
+    "postinstall": "patch-package"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.0"
   }
 }
