@@ -26,6 +26,7 @@ console.log("HTTP server listening on port", httpPort);
 const msg_ = (msg, data) => JSON.stringify({ msg, ...data });
 const msg = {
   scenes: (s) => msg_("scenes", { scenes: s }),
+  activeSceneId: (i) => msg_("activeSceneId", { id: i }),
 };
 
 // --------------------------------
@@ -35,6 +36,7 @@ const ableton = new Ableton({ logger: console });
 await ableton.start();
 let scenes = await ableton.song.get("scenes");
 let sceneMetadata = await getSceneMetadata(scenes);
+let activeSceneId = (await ableton.song.view.get("selected_scene")).raw.id;
 
 // --------------------------------
 // WEBSOCKET SERVER
@@ -67,10 +69,22 @@ ableton.song.addListener("scenes", async (s) => {
   onEachClient((client) => client.send(m));
 });
 
+ableton.song.view.addListener("selected_scene", (s) => {
+  activeSceneId = s?.raw.id;
+  const m = msg.activeSceneId(activeSceneId);
+  onEachClient((client) => client.send(m));
+})
+
 async function update(msg) {
   switch (msg.msg) {
     case "TriggerScene":
       await scenes[msg.index].fire();
+      break;
+    case "StopNicely":
+      await ableton.song.stopAllClips();
+      break;
+    case "StopNow":
+      await ableton.song.stopPlaying();
       break;
     default:
       console.error('Unknown frontend->backend message:', msg);
@@ -85,6 +99,7 @@ console.log(`Ready to receive connections, open the browser at http://${ipAddres
 
 async function getSceneMetadata(scenes) {
   return Promise.all(scenes.map(async (scene, index) => ({
+    id: scene.raw.id,
     name: await scene.get("name"),
     color: (await scene.get("color")).toString(),
     index,

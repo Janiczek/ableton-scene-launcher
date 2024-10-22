@@ -1,26 +1,95 @@
-/* Colors are from https://catppuccin.com/palette */
+html {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 8px;
+    width: 100dvw;
+    height: 100dvh;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
+    width: 100%;
+}
+
+.scenesets {
+    flex: 1;
+}
+
+.controls {
+    height: 48px;
+
+}
+
+
+.sceneset-name {
+    font-size: 16px;
+}
+
 .sceneset-scenes {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
     gap: 8px;
 }
 
 .scene {
-    /* Peach */
-    background-color: #fe640b;
-
-    color: black;
-    padding: 8px;
     border: none;
+    background: #e74c3c;
+    color: #fff;
     cursor: pointer;
-    width: 100%;
-    transition: opacity 0.2s, box-shadow 0.2s;
+    padding: 8px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    font-weight: 700;
+    outline: none;
+    position: relative;
+    transition: all var(--duration, 0.3s);
 }
 
 .scene:hover {
-    opacity: 0.8;
+    background: #c0392b;
 }
 
 .scene:active {
-    opacity: 0.6;
+    background: #c0392b;
+    top: 2px;
 }
+
+.scene:before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    width: 0;
+    transition: all linear var(--duration, 0.3s);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.scene.active:before {
+    width: 100%;
+}
+
+/* Button 1
+  background: #3498db;
+  background: #2980b9; hover, active
+
+  Button 2
+  background: #2ecc71;
+  background: #27ae60; hover, active
+
+  Button 3
+  background: #34495e;
+  background: #2c3e50; hover, active
+*/
