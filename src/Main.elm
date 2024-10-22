@@ -159,11 +159,6 @@ viewSceneButton scene =
         [ Html.text scene.name ]
 
 
-sceneSetHeaderColor : String
-sceneSetHeaderColor =
-    "#3c3c3c"
-
-
 {-|
 
     scenesToSceneSets
@@ -230,38 +225,40 @@ sceneSetHeaderColor =
 scenesToSceneSets : List Scene -> List SceneSet
 scenesToSceneSets scenes =
     let
-        go : String -> List Scene -> List SceneSet -> List SceneSet
-        go currentSetName remainingScenes acc =
+        sceneSetHeaderColor : String
+        sceneSetHeaderColor =
+            "#3c3c3c"
+
+        unnamed : String
+        unnamed =
+            "Unnamed"
+
+        go : String -> List Scene -> List Scene -> List SceneSet -> List SceneSet
+        go currentSetName currentScenes remainingScenes acc =
             case remainingScenes of
                 [] ->
                     List.reverse acc
 
                 scene :: rest ->
                     if scene.color == sceneSetHeaderColor then
-                        let
-                            newSceneSet =
-                                { name = scene.name
-                                , scenes = []
-                                }
-                        in
-                        go scene.name rest (newSceneSet :: acc)
+                        -- we can commit the acc scenes
+                        if currentScenes == [] && currentSetName == unnamed then
+                            -- skip the Unnamed catch-all set if it's empty
+                            go scene.name [] rest acc
+
+                        else
+                            -- new set! compile the current set into the acc
+                            go scene.name
+                                []
+                                rest
+                                ({ name = currentSetName
+                                 , scenes = List.reverse currentScenes
+                                 }
+                                    :: acc
+                                )
 
                     else
-                        case acc of
-                            currentSet :: otherSets ->
-                                let
-                                    updatedSet =
-                                        { currentSet | scenes = scene :: currentSet.scenes }
-                                in
-                                go currentSetName rest (updatedSet :: otherSets)
-
-                            [] ->
-                                let
-                                    newSceneSet =
-                                        { name = currentSetName
-                                        , scenes = [ scene ]
-                                        }
-                                in
-                                go currentSetName rest [ newSceneSet ]
+                        -- add the scene to the current set
+                        go currentSetName (scene :: currentScenes) rest acc
     in
-    go "Unnamed" scenes []
+    go unnamed [] scenes []
