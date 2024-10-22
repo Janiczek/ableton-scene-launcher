@@ -33,8 +33,8 @@ const msg = {
 
 const ableton = new Ableton({ logger: console });
 await ableton.start();
-let scenes = await getScenes(await ableton.song.get("scenes"));
-console.log({ scenes });
+let scenes = await ableton.song.get("scenes");
+let sceneMetadata = await getSceneMetadata(scenes);
 
 // --------------------------------
 // WEBSOCKET SERVER
@@ -47,30 +47,30 @@ wss.on('connection', function connection(ws) {
 
   ws.on('error', console.error);
 
-  ws.on('message', function message(data) {
+  ws.on('message', async function message(data) {
     console.log('received: %s', data);
     const json = JSON.parse(data);
-    update(json);
+    await update(json);
   });
 
   // Init with the scenes
-  ws.send(msg.scenes(scenes));
+  ws.send(msg.scenes(sceneMetadata));
 });
 
 // --------------------------------
 // BUSINESS LOGIC
 
 ableton.song.addListener("scenes", async (s) => {
-  scenes = await getScenes(s);
-  console.log({ scenes });
-  const m = msg.scenes(scenes);
+  scenes = s;
+  sceneMetadata = await getSceneMetadata(s);
+  const m = msg.scenes(sceneMetadata);
   onEachClient((client) => client.send(m));
 });
 
-function update(msg) {
+async function update(msg) {
   switch (msg.msg) {
     case "TriggerScene":
-      ableton.song.triggerScene(msg.scene);
+      await scenes[msg.index].fire();
       break;
     default:
       console.error('Unknown frontend->backend message:', msg);
@@ -83,10 +83,11 @@ console.log(`Ready to receive connections, open the browser at http://${ipAddres
 // --------------------------------
 // HELPERS
 
-async function getScenes(scenes) {
-  return Promise.all(scenes.map(async (scene) => ({
+async function getSceneMetadata(scenes) {
+  return Promise.all(scenes.map(async (scene, index) => ({
     name: await scene.get("name"),
     color: (await scene.get("color")).toString(),
+    index,
   })));
 }
 

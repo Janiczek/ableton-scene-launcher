@@ -29,6 +29,7 @@ port onWebsocketMessage : (String -> msg) -> Sub msg
 
 type alias Scene =
     { name : String
+    , index : Int
     , color : String
     }
 
@@ -60,7 +61,7 @@ type InMsg
 
 
 type OutMsg
-    = TriggerScene { name : String }
+    = TriggerScene { index : Int }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,18 +114,19 @@ inMsgDecoder =
 
 sceneDecoder : Decoder Scene
 sceneDecoder =
-    Json.Decode.map2 Scene
+    Json.Decode.map3 Scene
         (Json.Decode.field "name" Json.Decode.string)
+        (Json.Decode.field "index" Json.Decode.int)
         (Json.Decode.field "color" Json.Decode.string)
 
 
 encodeOutMsg : OutMsg -> Json.Encode.Value
 encodeOutMsg msg =
     case msg of
-        TriggerScene { name } ->
+        TriggerScene { index } ->
             Json.Encode.object
                 [ ( "msg", Json.Encode.string "TriggerScene" )
-                , ( "name", Json.Encode.string name )
+                , ( "index", Json.Encode.int index )
                 ]
 
 
@@ -143,11 +145,7 @@ viewSceneSet : SceneSet -> Html Msg
 viewSceneSet sceneSet =
     Html.div []
         [ Html.h2 [] [ Html.text sceneSet.name ]
-        , Html.div
-            [ Attrs.style "display" "grid"
-            , Attrs.style "grid-template-columns" "repeat(8, 1fr)"
-            , Attrs.style "gap" "8px"
-            ]
+        , Html.div [ Attrs.class "sceneset-scenes" ]
             (List.map viewSceneButton sceneSet.scenes)
         ]
 
@@ -155,13 +153,8 @@ viewSceneSet sceneSet =
 viewSceneButton : Scene -> Html Msg
 viewSceneButton scene =
     Html.button
-        [ Attrs.style "background-color" scene.color
-        , Attrs.style "color" "white"
-        , Attrs.style "padding" "8px"
-        , Attrs.style "border" "none"
-        , Attrs.style "cursor" "pointer"
-        , Attrs.style "width" "100%"
-        , Events.onClick (SendOutMsg (TriggerScene { name = scene.name }))
+        [ Attrs.class "scene"
+        , Events.onClick (SendOutMsg (TriggerScene { index = scene.index }))
         ]
         [ Html.text scene.name ]
 

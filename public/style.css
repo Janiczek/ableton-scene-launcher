@@ -1,0 +1,26 @@
+/* Colors are from https://catppuccin.com/palette */
+.sceneset-scenes {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+}
+
+.scene {
+    /* Peach */
+    background-color: #fe640b;
+
+    color: black;
+    padding: 8px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.scene:hover {
+    opacity: 0.8;
+}
+
+.scene:active {
+    opacity: 0.6;
+}
