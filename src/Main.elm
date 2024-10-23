@@ -158,15 +158,23 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     Html.div [ Attrs.class "app" ]
-        [ Html.div [ Attrs.class "scenesets" ] <|
-            List.map viewSceneSet model.sceneSets
+        [ Html.div [ Attrs.class "scenesets" ]
+            [ Html.div [ Attrs.class "scenesets-inner" ] <|
+                List.map viewSceneSet model.sceneSets
+            ]
         , Html.div [ Attrs.class "controls" ]
-            [ Html.button
-                [ Events.onClick (SendOutMsg StopNicely) ]
-                [ Html.text "Stop nicely" ]
-            , Html.button
-                [ Events.onClick (SendOutMsg StopNow) ]
-                [ Html.text "Stop now" ]
+            [ Html.div [ Attrs.class "controls-inner" ]
+                [ Html.button
+                    [ Events.onClick (SendOutMsg StopNicely)
+                    , Attrs.class "control"
+                    ]
+                    [ Html.text "Stop nicely" ]
+                , Html.button
+                    [ Events.onClick (SendOutMsg StopNow)
+                    , Attrs.class "control"
+                    ]
+                    [ Html.text "Stop now" ]
+                ]
             ]
         ]
 
