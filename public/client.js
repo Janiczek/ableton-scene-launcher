@@ -1,5 +1,7 @@
 const serverAddress = window.location.hostname;
 
+document.getElementById('lyricslides-iframe').src = `http://${serverAddress}:5115`;
+
 const app = Elm.Main.init({
     node: document.getElementById('elm'),
 });

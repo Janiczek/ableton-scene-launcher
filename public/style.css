@@ -4,17 +4,49 @@ html {
 }
 
 body {
-    background: #000;
+    background: #222;
     color: #fff;
     font-family: sans-serif;
     margin: 0;
     width: 100dvw;
     height: 100dvh;
+    overflow: hidden;
 }
 
 button:active {
     transition: transform 0.5s;
     transform: translateY(2px);
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    overflow: hidden;
+    width: 100dvw;
+    height: 100dvh;
+}
+
+.lyricslides {
+    min-height: 50dvh;
+    max-height: 50dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#lyricslides-iframe {
+    min-height: 50dvh;
+    max-height: 50dvh;
+    width: 100dvw;
+    max-width: 600px;
+    border: 0;
+}
+
+#elm {
+    min-height: 50dvh;
+    max-height: 50dvh;
 }
 
 .app {
@@ -36,7 +68,7 @@ button:active {
 
 .scenesets-inner {
     padding: 8px;
-    max-width: 768px;
+    max-width: 600px;
 }
 
 .controls {
@@ -49,7 +81,7 @@ button:active {
 
 .controls-inner {
     padding: 8px;
-    max-width: 768px;
+    max-width: 600px;
     display: flex;
     flex-direction: row;
     flex: 1;
