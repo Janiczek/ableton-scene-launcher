@@ -1,30 +1,25 @@
 diff --git a/node_modules/ableton-js/index.js b/node_modules/ableton-js/index.js
-index 53ebf2b..2211b9b 100644
+index 53ebf2b..8e04dea 100644
 --- a/node_modules/ableton-js/index.js
 +++ b/node_modules/ableton-js/index.js
-@@ -321,12 +321,12 @@ class Ableton extends events_1.EventEmitter {
+@@ -321,12 +321,8 @@ class Ableton extends events_1.EventEmitter {
                  ...command,
              };
              const msg = JSON.stringify(payload);
 -            const timeout = this.options?.commandTimeoutMs ?? 2000;
-+            //const timeout = this.options?.commandTimeoutMs ?? 2000;
              const arg = (0, lodash_1.truncate)(JSON.stringify(command.args), { length: 100 });
              const cls = command.nsid ? `${command.ns}(${command.nsid})` : command.ns;
 -            const timeoutId = setTimeout(() => {
 -                rej(new TimeoutError(`The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`, payload));
 -            }, timeout);
-+            //const timeoutId = setTimeout(() => {
-+            //    rej(new TimeoutError(`The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`, payload));
-+            //}, timeout);
              const currentTimestamp = Date.now();
              this.msgMap.set(msgId, {
                  res: (result) => {
-@@ -338,14 +338,14 @@ class Ableton extends events_1.EventEmitter {
+@@ -338,14 +334,10 @@ class Ableton extends events_1.EventEmitter {
                          });
                      }
                      this.setPing(duration);
 -                    clearTimeout(timeoutId);
-+                    //clearTimeout(timeoutId);
                      res(result);
                  },
                  rej,
@@ -32,10 +27,7 @@ index 53ebf2b..2211b9b 100644
 -                    clearTimeout(timeoutId);
 -                    rej(new DisconnectError(`Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`, payload));
 -                },
-+                //clearTimeout: () => {
-+                //    clearTimeout(timeoutId);
-+                //    rej(new DisconnectError(`Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`, payload));
-+                //},
++                clearTimeout: () => {},
              });
              this.sendRaw(msg);
          });
