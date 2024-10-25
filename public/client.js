@@ -2,7 +2,7 @@ const abletonServerAddress = window.location.hostname;
 
 const lyricslidesServerAddress = prompt("LyricSlides IP", abletonServerAddress);
 
-document.getElementById('lyricslides-iframe').src = `http://${abletonServerAddress}:5115`;
+document.getElementById('lyricslides-iframe').src = `http://${lyricslidesServerAddress}:5115`;
 
 const app = Elm.Main.init({
     node: document.getElementById('elm'),
